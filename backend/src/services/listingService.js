@@ -219,7 +219,7 @@ class ListingService {
     return listing.populate('landlord', 'name email avatar trustScore trustBadge');
   }
 
-  // Delete listing (soft delete - mark as inactive)
+  // Delete listing
   async deleteListing(listingId, landlordId) {
     const listing = await Listing.findById(listingId);
 
@@ -235,10 +235,12 @@ class ListingService {
       throw error;
     }
 
-    listing.isActive = false;
-    listing.isAvailable = false;
-    await listing.save();
+    // Delete images from ImageKit
+    if (listing.images && listing.images.length > 0) {
+      await imageService.deleteMultipleImages(listing.images);
+    }
 
+    await Listing.findByIdAndDelete(listingId);
     return listing;
   }
 

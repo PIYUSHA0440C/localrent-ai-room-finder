@@ -11,42 +11,26 @@ if (config.resend.apiKey) {
 }
 
 // Send verification email
-export const sendVerificationEmail = async (email, name, token) => {
+export const sendVerificationEmail = async (email, name, otp) => {
   if (!resend) {
-    console.log(`[DEV] Verification link for ${email}: ${config.clientUrl}/verify-email/${token}`);
+    console.log(`[DEV] OTP for ${email}: ${otp}`);
     return;
   }
-
-  const verifyUrl = `${config.clientUrl}/verify-email/${token}`;
 
   await resend.emails.send({
     from: config.resend.emailFrom,
     to: email,
     subject: 'Verify your LocalRent account',
     html: `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #E67E22; margin: 0;">LocalRent</h1>
-          <p style="color: #666; margin-top: 4px;">Find your perfect room</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #4f46e5;">Welcome to LocalRent!</h2>
+        <p>Hi ${name},</p>
+        <p>Thank you for registering. Please use the following 6-digit OTP to verify your email address. It will expire in 10 minutes:</p>
+        <div style="margin: 30px 0; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; text-align: center;">
+          ${otp}
         </div>
-        <h2 style="color: #333;">Welcome, ${name}! 👋</h2>
-        <p style="color: #555; line-height: 1.6;">
-          Thank you for joining LocalRent. Please verify your email to unlock all features
-          including saving listings, sending booking requests, and building your trust score.
-        </p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${verifyUrl}" 
-             style="background: #E67E22; color: white; padding: 14px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
-            Verify My Email
-          </a>
-        </div>
-        <p style="color: #888; font-size: 13px;">
-          This link expires in 24 hours. If you didn't create this account, you can ignore this email.
-        </p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
-        <p style="color: #aaa; font-size: 12px; text-align: center;">
-          © ${new Date().getFullYear()} LocalRent. Brokerage-free rooms for students & professionals.
-        </p>
+        <p>If you did not create an account, no further action is required.</p>
+        <p>Best regards,<br>The LocalRent Team</p>
       </div>
     `,
   });

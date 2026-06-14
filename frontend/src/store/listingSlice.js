@@ -74,9 +74,7 @@ export const deleteListing = createAsyncThunk('listings/delete', async (id, { re
 // Upload images
 export const uploadListingImages = createAsyncThunk('listings/uploadImages', async ({ id, formData }, { rejectWithValue }) => {
   try {
-    const response = await api.post(`/listings/${id}/images`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await api.post(`/listings/${id}/images`, formData);
     return response.data;
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || 'Image upload failed');

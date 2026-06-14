@@ -57,7 +57,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/search" element={<SearchListings />} />
           <Route path="/listings/:id" element={<ListingDetail />} />
-          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/users/:id" element={<PublicProfile />} />
 
           {/* Protected Routes - Any authenticated user */}

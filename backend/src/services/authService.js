@@ -42,9 +42,9 @@ class AuthService {
       throw error;
     }
 
-    // Create email verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    // Create email verification OTP
+    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Create user
     const user = await User.create({
@@ -61,14 +61,8 @@ class AuthService {
       console.error('Failed to send verification email:', err.message);
     });
 
-    // Generate tokens
-    const accessToken = this.generateAccessToken(user._id);
-    const refreshToken = await this.generateRefreshToken(user._id);
-
     return {
       user: user.toJSON(),
-      accessToken,
-      refreshToken,
     };
   }
 
@@ -163,14 +157,15 @@ class AuthService {
   }
 
   // Verify email
-  async verifyEmail(token) {
+  async verifyEmail(email, otp) {
     const user = await User.findOne({
-      emailVerificationToken: token,
+      email: email.toLowerCase(),
+      emailVerificationToken: otp,
       emailVerificationExpiry: { $gt: new Date() },
     }).select('+emailVerificationToken +emailVerificationExpiry');
 
     if (!user) {
-      const error = new Error('Invalid or expired verification link');
+      const error = new Error('Invalid or expired OTP');
       error.statusCode = 400;
       throw error;
     }
@@ -180,7 +175,15 @@ class AuthService {
     user.emailVerificationExpiry = undefined;
     await user.save();
 
-    return user.toJSON();
+    // Generate tokens
+    const accessToken = this.generateAccessToken(user._id);
+    const refreshToken = await this.generateRefreshToken(user._id);
+
+    return {
+      user: user.toJSON(),
+      accessToken,
+      refreshToken,
+    };
   }
 
   // Change password

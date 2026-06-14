@@ -14,7 +14,7 @@ class ImageService {
 
     try {
       const result = await imagekit.upload({
-        file: fileBuffer,
+        file: fileBuffer.toString('base64'),
         fileName: fileName,
         folder: `/localrent/${folder}`,
         useUniqueFileName: true,

@@ -5,19 +5,9 @@ export const register = async (req, res) => {
   const { name, email, password, role } = req.body;
   const result = await authService.register({ name, email, password, role });
 
-  // Set refresh token as httpOnly cookie
-  res.cookie('refreshToken', result.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: '/',
-  });
-
   res.status(201).json({
-    message: 'Registration successful. Please check your email to verify your account.',
+    message: 'Registration successful. Please check your email for the OTP.',
     user: result.user,
-    accessToken: result.accessToken,
   });
 };
 
@@ -67,13 +57,23 @@ export const logout = async (req, res) => {
   res.json({ message: 'Logged out successfully' });
 };
 
-// GET /api/auth/verify-email/:token
+// POST /api/auth/verify-email
 export const verifyEmail = async (req, res) => {
-  const user = await authService.verifyEmail(req.params.token);
+  const { email, otp } = req.body;
+  const result = await authService.verifyEmail(email, otp);
+
+  res.cookie('refreshToken', result.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+  });
 
   res.json({
     message: 'Email verified successfully',
-    user,
+    user: result.user,
+    accessToken: result.accessToken,
   });
 };
 

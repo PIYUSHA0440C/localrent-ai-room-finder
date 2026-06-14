@@ -1,15 +1,18 @@
-import { useForm } from 'react-hook-form';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { login, clearError } from '../store/authSlice';
-import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error, isAuthenticated } = useSelector((s) => s.auth);
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
 
   useEffect(() => {
     if (isAuthenticated) navigate('/dashboard');
@@ -20,8 +23,13 @@ const Login = () => {
     return () => dispatch(clearError());
   }, [error, dispatch]);
 
-  const onSubmit = (data) => {
-    dispatch(login(data));
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    dispatch(login(formData));
   };
 
   return (
@@ -34,29 +42,33 @@ const Login = () => {
         </div>
 
         <div className="card-static p-8 rounded-2xl">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={onSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="login-email">Email</label>
               <input
                 id="login-email"
+                name="email"
                 type="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
                 className="input-field"
                 placeholder="you@email.com"
-                {...register('email', { required: 'Email is required' })}
               />
-              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="login-password">Password</label>
               <input
                 id="login-password"
+                name="password"
                 type="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
                 className="input-field"
                 placeholder="••••••••"
-                {...register('password', { required: 'Password is required' })}
               />
-              {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full py-3" id="login-submit-btn">

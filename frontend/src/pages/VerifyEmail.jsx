@@ -1,51 +1,92 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import api from '../lib/api';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { verifyOtp, clearError } from '../store/authSlice';
+import toast from 'react-hot-toast';
 
 const VerifyEmail = () => {
-  const { token } = useParams();
-  const [status, setStatus] = useState('loading'); // loading | success | error
-  const [message, setMessage] = useState('');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { loading, error, isAuthenticated } = useSelector((s) => s.auth);
+  
+  const email = searchParams.get('email');
+  const [otp, setOtp] = useState('');
 
   useEffect(() => {
-    const verify = async () => {
-      try {
-        const response = await api.get(`/auth/verify-email/${token}`);
-        setStatus('success');
-        setMessage(response.data.message);
-      } catch (error) {
-        setStatus('error');
-        setMessage(error.response?.data?.message || 'Verification failed');
-      }
-    };
-    verify();
-  }, [token]);
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!email) {
+      toast.error('Email missing. Please register again.');
+      navigate('/register');
+    }
+  }, [email, navigate]);
+
+  useEffect(() => {
+    if (error) toast.error(error);
+    return () => dispatch(clearError());
+  }, [error, dispatch]);
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (otp.length !== 6) {
+      toast.error('OTP must be 6 digits');
+      return;
+    }
+    
+    try {
+      await dispatch(verifyOtp({ email, otp })).unwrap();
+      toast.success('Email verified successfully!');
+      navigate('/dashboard');
+    } catch (err) {
+      // Error is handled by slice and toast
+    }
+  };
+
+  if (!email) return null;
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center fade-in">
-      <div className="text-center max-w-md px-4">
-        {status === 'loading' && (
-          <>
-            <div className="w-12 h-12 border-4 border-gray-200 border-t-[var(--color-primary)] rounded-full animate-spin mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-700">Verifying your email...</h2>
-          </>
-        )}
-        {status === 'success' && (
-          <>
-            <span className="text-6xl block mb-4">✅</span>
-            <h2 className="text-2xl font-bold text-green-700 mb-2">Email Verified!</h2>
-            <p className="text-sm text-gray-500 mb-6">{message}</p>
-            <Link to="/dashboard" className="btn-primary">Go to Dashboard</Link>
-          </>
-        )}
-        {status === 'error' && (
-          <>
-            <span className="text-6xl block mb-4">❌</span>
-            <h2 className="text-2xl font-bold text-red-700 mb-2">Verification Failed</h2>
-            <p className="text-sm text-gray-500 mb-6">{message}</p>
-            <Link to="/" className="btn-primary">Go Home</Link>
-          </>
-        )}
+    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 fade-in">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <span className="text-4xl mb-3 block">✉️</span>
+          <h1 className="text-2xl font-extrabold text-[var(--color-secondary)]">Verify your email</h1>
+          <p className="text-sm text-gray-500 mt-2">
+            We've sent a 6-digit verification code to <br/>
+            <span className="font-semibold text-gray-800">{email}</span>
+          </p>
+        </div>
+
+        <div className="card-static p-8 rounded-2xl">
+          <form onSubmit={onSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="otp-input">Verification Code</label>
+              <input
+                id="otp-input"
+                type="text"
+                maxLength="6"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // only allow digits
+                className="input-field text-center text-2xl tracking-widest font-mono"
+                placeholder="000000"
+                required
+              />
+            </div>
+
+            <button type="submit" disabled={loading || otp.length !== 6} className="btn-primary w-full py-3">
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Verifying...
+                </span>
+              ) : 'Verify Account'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

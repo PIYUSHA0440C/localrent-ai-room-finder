@@ -5,10 +5,20 @@ import api from '../lib/api';
 export const register = createAsyncThunk('auth/register', async (data, { rejectWithValue }) => {
   try {
     const response = await api.post('/auth/register', data);
+    return response.data; // Just message and basic user details, no token yet
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || 'Registration failed');
+  }
+});
+
+// Verify OTP
+export const verifyOtp = createAsyncThunk('auth/verifyOtp', async (data, { rejectWithValue }) => {
+  try {
+    const response = await api.post('/auth/verify-email', data); // { email, otp }
     localStorage.setItem('accessToken', response.data.accessToken);
     return response.data;
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Registration failed');
+    return rejectWithValue(error.response?.data?.message || 'OTP Verification failed');
   }
 });
 
@@ -56,9 +66,7 @@ export const updateProfile = createAsyncThunk('auth/updateProfile', async (data,
 // Update avatar
 export const updateAvatar = createAsyncThunk('auth/updateAvatar', async (formData, { rejectWithValue }) => {
   try {
-    const response = await api.put('/users/avatar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await api.put('/users/avatar', formData);
     return response.data;
   } catch (error) {
     return rejectWithValue(error.response?.data?.message || 'Avatar upload failed');
@@ -88,8 +96,7 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
+        // Do not authenticate yet, wait for OTP
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
@@ -106,6 +113,20 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Verify OTP
+      .addCase(verifyOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyOtp.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+      })
+      .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
