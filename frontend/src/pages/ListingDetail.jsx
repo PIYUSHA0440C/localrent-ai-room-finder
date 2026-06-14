@@ -1,0 +1,325 @@
+import { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getListingById } from '../store/listingSlice';
+import { createBooking } from '../store/bookingSlice';
+import { getListingReviews, createReview } from '../store/reviewSlice';
+import { formatRent, formatDate, listingTypeLabels, genderLabels, furnishingLabels, amenityLabels, trustBadgeConfig, timeAgo } from '../utils/helpers';
+import toast from 'react-hot-toast';
+import { HiOutlineLocationMarker, HiOutlineStar, HiOutlineCalendar, HiOutlineCurrencyRupee, HiOutlineEye, HiOutlineShieldCheck, HiOutlineCheck } from 'react-icons/hi';
+
+const ListingDetail = () => {
+  const { id } = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { currentListing: listing, detailLoading } = useSelector((s) => s.listings);
+  const { user, isAuthenticated } = useSelector((s) => s.auth);
+  const { reviews } = useSelector((s) => s.reviews);
+  const { actionLoading: bookingLoading } = useSelector((s) => s.bookings);
+
+  const [activeImage, setActiveImage] = useState(0);
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [bookingData, setBookingData] = useState({ moveInDate: '', duration: 6, message: '' });
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
+
+  useEffect(() => {
+    dispatch(getListingById(id));
+    dispatch(getListingReviews({ listingId: id }));
+  }, [id, dispatch]);
+
+  const handleBooking = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    const result = await dispatch(createBooking({ listingId: id, ...bookingData }));
+    if (!result.error) {
+      toast.success('Booking request sent! The landlord will review it.');
+      setShowBookingForm(false);
+    } else {
+      toast.error(result.payload || 'Booking failed');
+    }
+  };
+
+  const handleReview = async (e) => {
+    e.preventDefault();
+    const result = await dispatch(createReview({ bookingId: reviewData.bookingId, rating: reviewData.rating, comment: reviewData.comment }));
+    if (!result.error) {
+      toast.success('Review submitted!');
+      setShowReviewForm(false);
+    }
+  };
+
+  if (detailLoading) {
+    return (
+      <div className="page-container">
+        <div className="skeleton h-96 rounded-2xl mb-6" />
+        <div className="skeleton h-8 w-2/3 mb-4" />
+        <div className="skeleton h-4 w-1/3 mb-8" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2"><div className="skeleton h-64 rounded-2xl" /></div>
+          <div><div className="skeleton h-64 rounded-2xl" /></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <div className="page-container text-center py-20">
+        <span className="text-6xl block mb-4">😕</span>
+        <h2 className="text-xl font-bold text-gray-700 mb-2">Listing not found</h2>
+        <Link to="/search" className="btn-primary mt-4">Browse Rooms</Link>
+      </div>
+    );
+  }
+
+  const badge = trustBadgeConfig[listing.landlord?.trustBadge] || trustBadgeConfig.new;
+  const canBook = isAuthenticated && user?.role === 'tenant' && listing.isAvailable;
+
+  return (
+    <div className="page-container fade-in">
+      {/* Image Gallery */}
+      <div className="mb-8">
+        <div className="rounded-2xl overflow-hidden bg-gray-100 aspect-[16/9] md:aspect-[21/9] mb-3">
+          <img
+            src={listing.images?.[activeImage]?.url || 'https://placehold.co/1200x500/E67E22/white?text=No+Images'}
+            alt={listing.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        {listing.images?.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {listing.images.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveImage(i)}
+                className={`w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all cursor-pointer ${i === activeImage ? 'border-[var(--color-primary)]' : 'border-transparent opacity-60 hover:opacity-100'}`}
+              >
+                <img src={img.url} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Header */}
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="badge bg-orange-50 text-[var(--color-primary)] font-semibold">{listingTypeLabels[listing.type]}</span>
+              {listing.genderPreference !== 'any' && (
+                <span className={`badge ${listing.genderPreference === 'girls' ? 'bg-pink-50 text-pink-700' : 'bg-blue-50 text-blue-700'}`}>
+                  {genderLabels[listing.genderPreference]}
+                </span>
+              )}
+              {!listing.isAvailable && <span className="badge bg-red-50 text-red-700">Not Available</span>}
+              {listing.mealsIncluded && <span className="badge bg-green-50 text-green-700">🍽️ Meals Included</span>}
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-[var(--color-secondary)] mb-2">{listing.title}</h1>
+            <p className="flex items-center gap-1.5 text-gray-500 text-sm capitalize">
+              <HiOutlineLocationMarker className="w-4 h-4 text-[var(--color-primary)]" />
+              {listing.area}, {listing.city}
+              {listing.landmark && <span> • Near {listing.landmark}</span>}
+            </p>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="card-static p-4 text-center rounded-xl">
+              <HiOutlineCurrencyRupee className="w-5 h-5 mx-auto mb-1 text-[var(--color-primary)]" />
+              <p className="text-lg font-extrabold text-[var(--color-secondary)]">{formatRent(listing.rent)}</p>
+              <p className="text-xs text-gray-500">per month</p>
+            </div>
+            <div className="card-static p-4 text-center rounded-xl">
+              <HiOutlineCurrencyRupee className="w-5 h-5 mx-auto mb-1 text-gray-400" />
+              <p className="text-lg font-extrabold text-[var(--color-secondary)]">{formatRent(listing.deposit)}</p>
+              <p className="text-xs text-gray-500">deposit</p>
+            </div>
+            <div className="card-static p-4 text-center rounded-xl">
+              <HiOutlineStar className="w-5 h-5 mx-auto mb-1 text-amber-500" />
+              <p className="text-lg font-extrabold text-[var(--color-secondary)]">{listing.averageRating > 0 ? listing.averageRating.toFixed(1) : '–'}</p>
+              <p className="text-xs text-gray-500">{listing.totalReviews} reviews</p>
+            </div>
+            <div className="card-static p-4 text-center rounded-xl">
+              <HiOutlineEye className="w-5 h-5 mx-auto mb-1 text-gray-400" />
+              <p className="text-lg font-extrabold text-[var(--color-secondary)]">{listing.viewCount}</p>
+              <p className="text-xs text-gray-500">views</p>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="card-static p-6 rounded-2xl">
+            <h2 className="text-lg font-bold text-[var(--color-secondary)] mb-3">About this place</h2>
+            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{listing.description}</p>
+          </div>
+
+          {/* Details */}
+          <div className="card-static p-6 rounded-2xl">
+            <h2 className="text-lg font-bold text-[var(--color-secondary)] mb-4">Details</h2>
+            <div className="grid grid-cols-2 gap-y-3 text-sm">
+              <div className="text-gray-500">Furnishing</div>
+              <div className="font-medium text-gray-800">{furnishingLabels[listing.furnishing]}</div>
+              <div className="text-gray-500">Max Occupants</div>
+              <div className="font-medium text-gray-800">{listing.maxOccupants}</div>
+              <div className="text-gray-500">Gender</div>
+              <div className="font-medium text-gray-800">{genderLabels[listing.genderPreference]}</div>
+              <div className="text-gray-500">Listed</div>
+              <div className="font-medium text-gray-800">{formatDate(listing.createdAt)}</div>
+            </div>
+          </div>
+
+          {/* Amenities */}
+          {listing.amenities?.length > 0 && (
+            <div className="card-static p-6 rounded-2xl">
+              <h2 className="text-lg font-bold text-[var(--color-secondary)] mb-4">Amenities</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {listing.amenities.map((a) => (
+                  <div key={a} className="flex items-center gap-2 text-sm text-gray-700">
+                    <HiOutlineCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>{amenityLabels[a] || a.replace('_', ' ')}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* House Rules */}
+          {listing.houseRules?.length > 0 && (
+            <div className="card-static p-6 rounded-2xl">
+              <h2 className="text-lg font-bold text-[var(--color-secondary)] mb-4">House Rules</h2>
+              <div className="flex flex-wrap gap-2">
+                {listing.houseRules.map((r) => (
+                  <span key={r} className="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-full capitalize">
+                    🚫 {r.replace(/_/g, ' ')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Reviews */}
+          <div className="card-static p-6 rounded-2xl">
+            <h2 className="text-lg font-bold text-[var(--color-secondary)] mb-4">
+              Reviews {listing.totalReviews > 0 && `(${listing.totalReviews})`}
+            </h2>
+            {reviews.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-6">No reviews yet. Be the first to review!</p>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <div key={review._id} className="border-b border-gray-100 pb-4 last:border-none last:pb-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-primary-light)] to-[var(--color-primary)] flex items-center justify-center text-white text-xs font-bold">
+                        {review.reviewer?.name?.[0]?.toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">{review.reviewer?.name}</p>
+                        <p className="text-xs text-gray-400">{timeAgo(review.createdAt)}</p>
+                      </div>
+                      <div className="ml-auto flex items-center gap-1">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <HiOutlineStar key={i} className={`w-4 h-4 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed ml-11">{review.comment}</p>
+                    {review.isEdited && <span className="text-xs text-gray-400 ml-11">(edited)</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Booking Card */}
+          <div className="card-static p-6 rounded-2xl sticky top-20">
+            <div className="text-center mb-4">
+              <p className="text-3xl font-extrabold text-[var(--color-secondary)]">{formatRent(listing.rent)}<span className="text-sm font-normal text-gray-500">/mo</span></p>
+              <p className="text-xs text-gray-500 mt-1">+ {formatRent(listing.deposit)} deposit</p>
+            </div>
+
+            {canBook ? (
+              showBookingForm ? (
+                <form onSubmit={handleBooking} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Move-in Date</label>
+                    <input type="date" required value={bookingData.moveInDate} onChange={(e) => setBookingData((p) => ({ ...p, moveInDate: e.target.value }))}
+                      min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} className="input-field text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Duration (months)</label>
+                    <select value={bookingData.duration} onChange={(e) => setBookingData((p) => ({ ...p, duration: parseInt(e.target.value) }))} className="input-field text-sm">
+                      {[1,2,3,6,9,12,18,24].map((m) => <option key={m} value={m}>{m} month{m > 1 ? 's' : ''}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Message (optional)</label>
+                    <textarea value={bookingData.message} onChange={(e) => setBookingData((p) => ({ ...p, message: e.target.value }))}
+                      placeholder="Introduce yourself..." rows={3} className="input-field text-sm resize-none" maxLength={500} />
+                  </div>
+                  <button type="submit" disabled={bookingLoading} className="btn-primary w-full py-3">
+                    {bookingLoading ? 'Sending...' : 'Send Booking Request'}
+                  </button>
+                  <button type="button" onClick={() => setShowBookingForm(false)} className="btn-secondary w-full">Cancel</button>
+                </form>
+              ) : (
+                <button onClick={() => setShowBookingForm(true)} className="btn-primary w-full py-3" id="book-now-btn">
+                  <HiOutlineCalendar className="w-5 h-5" /> Book This Room
+                </button>
+              )
+            ) : !isAuthenticated ? (
+              <Link to="/login" className="btn-primary w-full py-3 text-center block">Sign in to Book</Link>
+            ) : !listing.isAvailable ? (
+              <p className="text-center text-sm text-red-500 font-medium py-3">Currently occupied</p>
+            ) : user?.role === 'landlord' ? (
+              <p className="text-center text-sm text-gray-500 py-3">Landlords cannot book rooms</p>
+            ) : null}
+
+            {listing.isAvailable && (
+              <p className="flex items-center justify-center gap-1.5 text-xs text-green-600 mt-3 font-medium">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> Available now
+              </p>
+            )}
+          </div>
+
+          {/* Landlord Card */}
+          <div className="card-static p-6 rounded-2xl">
+            <h3 className="text-sm font-bold text-gray-700 mb-4">Listed by</h3>
+            <Link to={`/users/${listing.landlord?._id}`} className="flex items-center gap-3 no-underline group">
+              {listing.landlord?.avatar ? (
+                <img src={listing.landlord.avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--color-primary-light)] to-[var(--color-primary)] flex items-center justify-center text-white text-lg font-bold">
+                  {listing.landlord?.name?.[0]?.toUpperCase()}
+                </div>
+              )}
+              <div>
+                <p className="text-sm font-semibold text-gray-800 group-hover:text-[var(--color-primary)]">{listing.landlord?.name}</p>
+                <span className={`badge ${badge.className} mt-0.5`}>{badge.icon} {badge.label}</span>
+              </div>
+            </Link>
+            <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-3 text-center">
+              <div>
+                <p className="text-lg font-bold text-[var(--color-secondary)]">{listing.landlord?.trustScore || 0}</p>
+                <p className="text-xs text-gray-500">Trust Score</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-[var(--color-secondary)]">{listing.landlord?.completedBookings || 0}</p>
+                <p className="text-xs text-gray-500">Bookings</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ListingDetail;
