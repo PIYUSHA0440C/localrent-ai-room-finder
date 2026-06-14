@@ -7,6 +7,8 @@ import { getListingReviews, createReview } from '../store/reviewSlice';
 import { formatRent, formatDate, listingTypeLabels, genderLabels, furnishingLabels, amenityLabels, trustBadgeConfig, timeAgo } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { HiOutlineLocationMarker, HiOutlineStar, HiOutlineCalendar, HiOutlineCurrencyRupee, HiOutlineEye, HiOutlineShieldCheck, HiOutlineCheck } from 'react-icons/hi';
+import { HiSparkles } from 'react-icons/hi2';
+import api from '../lib/api';
 
 const ListingDetail = () => {
   const { id } = useParams();
@@ -22,6 +24,8 @@ const ListingDetail = () => {
   const [bookingData, setBookingData] = useState({ moveInDate: '', duration: 6, message: '' });
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
+  const [reviewSummary, setReviewSummary] = useState(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   useEffect(() => {
     dispatch(getListingById(id));
@@ -49,6 +53,19 @@ const ListingDetail = () => {
     if (!result.error) {
       toast.success('Review submitted!');
       setShowReviewForm(false);
+    }
+  };
+
+  const handleSummarizeReviews = async () => {
+    setIsSummarizing(true);
+    try {
+      const response = await api.post('/ai/summarize-reviews', { listingId: id });
+      setReviewSummary(response.data.summary);
+      toast.success('Reviews summarized!');
+    } catch (err) {
+      toast.error('Failed to summarize reviews');
+    } finally {
+      setIsSummarizing(false);
     }
   };
 
@@ -204,9 +221,31 @@ const ListingDetail = () => {
 
           {/* Reviews */}
           <div className="card-static p-6 rounded-2xl">
-            <h2 className="text-lg font-bold text-[var(--color-secondary)] mb-4">
-              Reviews {listing.totalReviews > 0 && `(${listing.totalReviews})`}
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-[var(--color-secondary)]">
+                Reviews {listing.totalReviews > 0 && `(${listing.totalReviews})`}
+              </h2>
+              {reviews.length > 0 && (
+                <button 
+                  onClick={handleSummarizeReviews} 
+                  disabled={isSummarizing}
+                  className="btn-secondary btn-sm flex items-center gap-1 cursor-pointer"
+                >
+                  {isSummarizing ? <><span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>...</> : <><HiSparkles className="w-4 h-4 text-purple-500" /> AI Summary</>}
+                </button>
+              )}
+            </div>
+
+            {reviewSummary && (
+              <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-100 flex gap-3 items-start fade-in">
+                <HiSparkles className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-purple-900 mb-1">AI Summary</h4>
+                  <p className="text-sm text-purple-800 leading-relaxed whitespace-pre-line">{reviewSummary}</p>
+                </div>
+              </div>
+            )}
+
             {reviews.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-6">No reviews yet. Be the first to review!</p>
             ) : (

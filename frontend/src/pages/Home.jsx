@@ -5,23 +5,49 @@ import { getFeaturedListings } from '../store/listingSlice';
 import { useEffect } from 'react';
 import ListingCard from '../components/ListingCard';
 import { HiOutlineSearch, HiOutlineShieldCheck, HiOutlineCurrencyRupee, HiOutlineLocationMarker, HiOutlineChat, HiOutlineStar } from 'react-icons/hi';
+import { HiSparkles } from 'react-icons/hi2';
+import api from '../lib/api';
+import toast from 'react-hot-toast';
 
 const Home = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { featured, loading } = useSelector((s) => s.listings);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAiSearching, setIsAiSearching] = useState(false);
 
   useEffect(() => {
     dispatch(getFeaturedListings());
   }, [dispatch]);
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
+    if (!searchQuery.trim()) {
       navigate('/search');
+      return;
+    }
+
+    setIsAiSearching(true);
+    try {
+      const response = await api.post('/ai/smart-search', { query: searchQuery.trim() });
+      const { filters } = response.data;
+      
+      const params = new URLSearchParams();
+      if (filters && Object.keys(filters).length > 0) {
+        Object.keys(filters).forEach(key => {
+          if (filters[key]) params.append(key, filters[key]);
+        });
+        toast.success('AI found your preferences!', { icon: '✨' });
+      } else {
+        params.append('search', searchQuery.trim());
+      }
+      
+      navigate(`/search?${params.toString()}`);
+    } catch (err) {
+      // Fallback
+      navigate(`/search?search=${encodeURIComponent(searchQuery.trim())}`);
+    } finally {
+      setIsAiSearching(false);
     }
   };
 
@@ -73,9 +99,10 @@ const Home = () => {
                   placeholder='Try "PG near IIT Delhi under 8000" or "2BHK in Koramangala"'
                   className="flex-1 px-4 py-4 text-sm bg-transparent border-none outline-none text-gray-800 placeholder:text-gray-400"
                   id="hero-search-input"
+                  disabled={isAiSearching}
                 />
-                <button type="submit" className="btn-primary m-1.5 rounded-xl px-6" id="hero-search-btn">
-                  Search
+                <button type="submit" disabled={isAiSearching} className="btn-primary m-1.5 rounded-xl px-6" id="hero-search-btn">
+                  {isAiSearching ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> AI Thinking...</> : <><HiSparkles className="w-5 h-5"/> Smart Search</>}
                 </button>
               </div>
             </form>

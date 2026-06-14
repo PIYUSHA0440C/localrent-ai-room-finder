@@ -6,7 +6,6 @@ const reviewSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Booking',
       required: [true, 'Booking reference is required'],
-      unique: true, // one review per booking
     },
     listing: {
       type: mongoose.Schema.Types.ObjectId,

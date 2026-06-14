@@ -21,7 +21,7 @@ class AiService {
     }
 
     try {
-      const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
+      const response = await fetch(`${this.apiUrl}${config.ai.model}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
