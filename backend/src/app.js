@@ -1,4 +1,3 @@
-import 'express-async-errors';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -19,6 +18,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
@@ -32,7 +32,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 100 requests per windowMs
+  max: 5000, // Generous limit for overall API
   message: { message: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -40,7 +40,8 @@ const limiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20, // stricter for auth endpoints
+  max: 100, // stricter for auth endpoints
+  skip: (req) => req.method === 'GET',
   message: { message: 'Too many auth attempts, please try again later.' },
 });
 
@@ -73,7 +74,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/admin', adminRoutes);
 
 if (process.env.NODE_ENV === 'production') {
-  app.get('*name', (req, res) => {
+  app.use('*name', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
 } else {

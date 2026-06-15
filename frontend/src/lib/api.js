@@ -18,7 +18,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/auth/')) {
       originalRequest._retry = true;
       try {
         const res = await axios.post('/api/auth/refresh-token', {}, { withCredentials: true });
@@ -28,7 +28,9 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         localStorage.removeItem('accessToken');
-        window.location.href = '/login';
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          window.location.href = '/login';
+        }
         return Promise.reject(err);
       }
     }
