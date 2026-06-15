@@ -1,7 +1,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <h1 align="center">LocalRent</h1>
+  <h1 align="center">LocalRent - AI Room Finder</h1>
 
   <p align="center">
     An AI-Powered, Broker-Free Room & PG Discovery Platform

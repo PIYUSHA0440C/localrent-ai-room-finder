@@ -1,4 +1,4 @@
-# LocalRent - Backend API & Services
+# LocalRent AI Room Finder - Backend API & Services
 
 This directory contains the Node.js/Express monolithic API server that powers the LocalRent platform. It handles database modeling, authentication security, external third-party integrations, and the core business logic for booking lifecycles.
 

@@ -1,4 +1,4 @@
-# LocalRent - Frontend UI/UX
+# LocalRent AI Room Finder - Frontend UI/UX
 
 This directory contains the entire React-based user interface for LocalRent. It is designed to be highly responsive, modern, and user-centric, featuring role-based routing for Landlords and Tenants.
 
