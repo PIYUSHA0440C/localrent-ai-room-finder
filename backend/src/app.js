@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import config from './config/env.js';
 import errorHandler from './middleware/errorHandler.js';
 
@@ -51,6 +52,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+const frontendPath = path.join(process.cwd(), '../frontend/dist');
+app.use(express.static(frontendPath));
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -66,9 +70,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/admin', adminRoutes);
 
-// 404 handler
-app.use('/api/*', (req, res) => {
-  res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+app.use('*name', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // Global error handler

@@ -1,0 +1,9 @@
+{
+  "name": "localrent",
+  "version": "1.0.0",
+  "description": "LocalRent - Monolith Deployment",
+  "scripts": {
+    "build": "npm install --prefix frontend && npm run build --prefix frontend && npm install --prefix backend",
+    "start": "npm start --prefix backend"
+  }
+}

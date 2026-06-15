@@ -21,19 +21,22 @@ class AiService {
     }
 
     try {
-      const response = await fetch(`${this.apiUrl}${config.ai.model}:generateContent?key=${this.apiKey}`, {
+      const modelToUse = 'gemini-2.5-flash';
+      const response = await fetch(`${this.apiUrl}${modelToUse}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 1024,
+            maxOutputTokens: 4096,
           },
         }),
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`AI API error status ${response.status}:`, errorText);
         throw new Error(`AI API responded with status ${response.status}`);
       }
 

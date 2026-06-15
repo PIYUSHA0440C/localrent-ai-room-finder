@@ -24,7 +24,7 @@ const config = {
   ai: {
     apiKey: process.env.AI_API_KEY,
     apiUrl: process.env.AI_API_URL,
-    model: process.env.AI_MODEL || 'gemini-1.5-flash',
+    model: process.env.AI_MODEL || 'gemini-2.5-flash',
   },
 };
 
