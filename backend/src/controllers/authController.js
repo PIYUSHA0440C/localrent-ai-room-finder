@@ -2,8 +2,8 @@ import authService from '../services/authService.js';
 
 // POST /api/auth/register
 export const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
-  const result = await authService.register({ name, email, password, role });
+  const { name, email, password, role, phone } = req.body;
+  const result = await authService.register({ name, email, password, role, phone });
 
   res.status(201).json({
     message: 'Registration successful. Please check your email for the OTP.',

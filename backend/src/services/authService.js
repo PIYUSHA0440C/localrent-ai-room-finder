@@ -33,7 +33,7 @@ class AuthService {
   }
 
   // Register new user
-  async register({ name, email, password, role }) {
+  async register({ name, email, password, role, phone }) {
     // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
@@ -52,6 +52,7 @@ class AuthService {
       email: email.toLowerCase(),
       password,
       role,
+      phone,
       emailVerificationToken: verificationToken,
       emailVerificationExpiry: verificationExpiry,
     });

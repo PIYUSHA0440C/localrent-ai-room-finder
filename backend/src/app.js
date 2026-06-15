@@ -32,7 +32,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 100 requests per windowMs
   message: { message: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -53,7 +53,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const frontendPath = path.join(process.cwd(), '../frontend/dist');
-app.use(express.static(frontendPath));
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(frontendPath));
+}
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -70,9 +72,15 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.use('*name', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
-});
+if (process.env.NODE_ENV === 'production') {
+  app.get('*name', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.send('API is running in development mode...');
+  });
+}
 
 // Global error handler
 app.use(errorHandler);

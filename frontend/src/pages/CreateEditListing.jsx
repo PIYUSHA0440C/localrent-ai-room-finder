@@ -274,7 +274,7 @@ const CreateEditListing = () => {
                 <div className="flex flex-wrap gap-3 mt-4">
                   {imageFiles.map((f, i) => (
                     <div key={i} className="w-24 h-16 rounded-lg overflow-hidden bg-gray-100">
-                      <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
+                      <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-contain bg-gray-100" />
                     </div>
                   ))}
                 </div>

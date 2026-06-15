@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createReview, getListingReviews, editReview } from '../controllers/reviewController.js';
+import { createReview, getListingReviews, editReview, checkEligibility } from '../controllers/reviewController.js';
 import { authenticate } from '../middleware/auth.js';
 import { validateReview } from '../middleware/validate.js';
 
@@ -9,6 +9,7 @@ const router = Router();
 router.get('/listing/:listingId', getListingReviews);
 
 // Authenticated routes
+router.get('/check-eligibility/:listingId', authenticate, checkEligibility);
 router.post('/', authenticate, validateReview, createReview);
 router.put('/:id', authenticate, editReview);
 

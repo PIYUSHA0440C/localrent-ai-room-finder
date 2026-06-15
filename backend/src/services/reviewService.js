@@ -6,6 +6,40 @@ import { BOOKING_STATUSES } from '../config/constants.js';
 import trustService from './trustService.js';
 
 class ReviewService {
+  // Check if a user is eligible to review a listing
+  async checkEligibility(reviewerId, listingId) {
+    // Find all completed or active bookings for this user and listing
+    const bookings = await Booking.find({
+      tenant: reviewerId,
+      listing: listingId,
+      status: { $in: [BOOKING_STATUSES.COMPLETED, BOOKING_STATUSES.ACTIVE] },
+    }).lean();
+
+    if (bookings.length === 0) {
+      return { canReview: false };
+    }
+
+    // Get all booking IDs
+    const bookingIds = bookings.map(b => b._id);
+
+    // Find any existing reviews for these bookings
+    const existingReviews = await Review.find({
+      booking: { $in: bookingIds },
+      reviewer: reviewerId,
+    }).lean();
+
+    const reviewedBookingIds = new Set(existingReviews.map(r => r.booking.toString()));
+
+    // Find the first booking that hasn't been reviewed
+    const unreviewedBooking = bookings.find(b => !reviewedBookingIds.has(b._id.toString()));
+
+    if (unreviewedBooking) {
+      return { canReview: true, bookingId: unreviewedBooking._id };
+    }
+
+    return { canReview: false };
+  }
+
   // Create a review
   async createReview(reviewerId, data) {
     const { bookingId, rating, comment } = data;
@@ -26,9 +60,9 @@ class ReviewService {
       throw error;
     }
 
-    // Must be completed
-    if (booking.status !== BOOKING_STATUSES.COMPLETED) {
-      const error = new Error('You can only review completed bookings');
+    // Must be completed or active
+    if (![BOOKING_STATUSES.COMPLETED, BOOKING_STATUSES.ACTIVE].includes(booking.status)) {
+      const error = new Error('You can only review active or completed bookings');
       error.statusCode = 400;
       throw error;
     }

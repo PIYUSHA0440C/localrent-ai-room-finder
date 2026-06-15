@@ -13,6 +13,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     role: searchParams.get('role') || 'tenant'
   });
@@ -103,6 +104,27 @@ const Register = () => {
                 className="input-field" 
                 placeholder="you@email.com"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="reg-phone">Phone Number</label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                  +91
+                </span>
+                <input 
+                  id="reg-phone" 
+                  name="phone"
+                  type="tel" 
+                  pattern="[6-9][0-9]{9}"
+                  title="Please enter a valid 10-digit Indian phone number"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required 
+                  className="input-field !rounded-l-none" 
+                  placeholder="9876543210"
+                />
+              </div>
             </div>
 
             <div>

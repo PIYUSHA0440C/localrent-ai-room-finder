@@ -10,6 +10,15 @@ export const getListingReviews = createAsyncThunk('reviews/getListingReviews', a
   }
 });
 
+export const checkReviewEligibility = createAsyncThunk('reviews/checkEligibility', async (listingId, { rejectWithValue }) => {
+  try {
+    const response = await api.get(`/reviews/check-eligibility/${listingId}`);
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response?.data?.message || 'Failed to check eligibility');
+  }
+});
+
 export const createReview = createAsyncThunk('reviews/create', async (data, { rejectWithValue }) => {
   try {
     const response = await api.post('/reviews', data);
@@ -33,6 +42,7 @@ const reviewSlice = createSlice({
   initialState: {
     reviews: [],
     pagination: null,
+    eligibility: { canReview: false, bookingId: null },
     loading: false,
     error: null,
   },
@@ -54,6 +64,9 @@ const reviewSlice = createSlice({
       .addCase(editReview.fulfilled, (state, action) => {
         const idx = state.reviews.findIndex((r) => r._id === action.payload.review._id);
         if (idx !== -1) state.reviews[idx] = action.payload.review;
+      })
+      .addCase(checkReviewEligibility.fulfilled, (state, action) => {
+        state.eligibility = action.payload;
       });
   },
 });

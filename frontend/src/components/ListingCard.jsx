@@ -9,11 +9,11 @@ const ListingCard = ({ listing }) => {
   return (
     <Link to={`/listings/${listing._id}`} className="card overflow-hidden block no-underline group">
       {/* Image */}
-      <div className="relative overflow-hidden aspect-[16/10]">
+      <div className="relative overflow-hidden aspect-[16/10] bg-gray-100">
         <img
           src={mainImage}
           alt={listing.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
         />
         {/* Type badge */}

@@ -88,7 +88,7 @@ const SearchListings = () => {
             value={filters.search}
             onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value, page: 1 }))}
             placeholder="Search by city, area, landmark..."
-            className="input-field pl-10"
+            className="input-field !pl-10"
             id="search-input"
           />
         </div>

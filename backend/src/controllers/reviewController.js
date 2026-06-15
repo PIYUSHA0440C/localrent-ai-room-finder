@@ -6,6 +6,12 @@ export const createReview = async (req, res) => {
   res.status(201).json({ message: 'Review submitted', review });
 };
 
+// GET /api/reviews/check-eligibility/:listingId
+export const checkEligibility = async (req, res) => {
+  const result = await reviewService.checkEligibility(req.user._id, req.params.listingId);
+  res.json(result);
+};
+
 // GET /api/reviews/listing/:listingId
 export const getListingReviews = async (req, res) => {
   const result = await reviewService.getListingReviews(req.params.listingId, req.query);

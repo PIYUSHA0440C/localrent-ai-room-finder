@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getListingById } from '../store/listingSlice';
 import { createBooking } from '../store/bookingSlice';
-import { getListingReviews, createReview } from '../store/reviewSlice';
+import { getListingReviews, createReview, checkReviewEligibility } from '../store/reviewSlice';
 import { formatRent, formatDate, listingTypeLabels, genderLabels, furnishingLabels, amenityLabels, trustBadgeConfig, timeAgo } from '../utils/helpers';
 import toast from 'react-hot-toast';
-import { HiOutlineLocationMarker, HiOutlineStar, HiOutlineCalendar, HiOutlineCurrencyRupee, HiOutlineEye, HiOutlineShieldCheck, HiOutlineCheck } from 'react-icons/hi';
+import { HiOutlineLocationMarker, HiOutlineStar, HiOutlineCalendar, HiOutlineCurrencyRupee, HiOutlineEye, HiOutlineShieldCheck, HiOutlineCheck, HiOutlinePhone } from 'react-icons/hi';
 import { HiSparkles } from 'react-icons/hi2';
 import api from '../lib/api';
 
@@ -16,21 +16,36 @@ const ListingDetail = () => {
   const navigate = useNavigate();
   const { currentListing: listing, detailLoading } = useSelector((s) => s.listings);
   const { user, isAuthenticated } = useSelector((s) => s.auth);
-  const { reviews } = useSelector((s) => s.reviews);
+  const { reviews, eligibility } = useSelector((s) => s.reviews);
   const { actionLoading: bookingLoading } = useSelector((s) => s.bookings);
 
   const [activeImage, setActiveImage] = useState(0);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [bookingData, setBookingData] = useState({ moveInDate: '', duration: 6, message: '' });
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
+  const [reviewData, setReviewData] = useState({ bookingId: '', rating: 5, comment: '' });
   const [reviewSummary, setReviewSummary] = useState(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
+
+  const location = useLocation();
 
   useEffect(() => {
     dispatch(getListingById(id));
     dispatch(getListingReviews({ listingId: id }));
-  }, [id, dispatch]);
+    if (isAuthenticated && user?.role === 'tenant') {
+      dispatch(checkReviewEligibility(id));
+    }
+  }, [id, dispatch, isAuthenticated, user]);
+
+  useEffect(() => {
+    // Check if we navigated here specifically to leave a review
+    if (location.state?.showReviewModal && location.state?.bookingId) {
+      setReviewData(prev => ({ ...prev, bookingId: location.state.bookingId }));
+      setShowReviewForm(true);
+      // Clean up state so refresh doesn't reopen modal
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const handleBooking = async (e) => {
     e.preventDefault();
@@ -53,6 +68,12 @@ const ListingDetail = () => {
     if (!result.error) {
       toast.success('Review submitted!');
       setShowReviewForm(false);
+      // Check eligibility again to hide the button
+      if (isAuthenticated && user?.role === 'tenant') {
+        dispatch(checkReviewEligibility(id));
+      }
+    } else {
+      toast.error(result.payload || 'Failed to submit review');
     }
   };
 
@@ -104,7 +125,7 @@ const ListingDetail = () => {
           <img
             src={listing.images?.[activeImage]?.url || 'https://placehold.co/1200x500/E67E22/white?text=No+Images'}
             alt={listing.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         </div>
         {listing.images?.length > 1 && (
@@ -115,7 +136,7 @@ const ListingDetail = () => {
                 onClick={() => setActiveImage(i)}
                 className={`w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all cursor-pointer ${i === activeImage ? 'border-[var(--color-primary)]' : 'border-transparent opacity-60 hover:opacity-100'}`}
               >
-                <img src={img.url} alt="" className="w-full h-full object-cover" />
+                <img src={img.url} alt="" className="w-full h-full object-contain bg-gray-100" />
               </button>
             ))}
           </div>
@@ -225,15 +246,28 @@ const ListingDetail = () => {
               <h2 className="text-lg font-bold text-[var(--color-secondary)]">
                 Reviews {listing.totalReviews > 0 && `(${listing.totalReviews})`}
               </h2>
-              {reviews.length > 0 && (
-                <button 
-                  onClick={handleSummarizeReviews} 
-                  disabled={isSummarizing}
-                  className="btn-secondary btn-sm flex items-center gap-1 cursor-pointer"
-                >
-                  {isSummarizing ? <><span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>...</> : <><HiSparkles className="w-4 h-4 text-purple-500" /> AI Summary</>}
-                </button>
-              )}
+              <div className="flex gap-2">
+                {eligibility?.canReview && (
+                  <button 
+                    onClick={() => {
+                      setReviewData(prev => ({ ...prev, bookingId: eligibility.bookingId }));
+                      setShowReviewForm(true);
+                    }}
+                    className="btn-primary btn-sm flex items-center gap-1 cursor-pointer"
+                  >
+                    <HiOutlineStar className="w-4 h-4" /> Write a Review
+                  </button>
+                )}
+                {reviews.length > 0 && (
+                  <button 
+                    onClick={handleSummarizeReviews} 
+                    disabled={isSummarizing}
+                    className="btn-secondary btn-sm flex items-center gap-1 cursor-pointer"
+                  >
+                    {isSummarizing ? <><span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>...</> : <><HiSparkles className="w-4 h-4 text-purple-500" /> AI Summary</>}
+                  </button>
+                )}
+              </div>
             </div>
 
             {reviewSummary && (
@@ -344,6 +378,25 @@ const ListingDetail = () => {
                 <span className={`badge ${badge.className} mt-0.5`}>{badge.icon} {badge.label}</span>
               </div>
             </Link>
+            
+            {/* Landlord Contact Phone */}
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              {isAuthenticated ? (
+                listing.landlord?.phone ? (
+                  <a href={`tel:${listing.landlord.phone}`} className="btn-secondary w-full flex items-center justify-center gap-2 no-underline">
+                    <HiOutlinePhone className="w-4 h-4" /> Call Landlord
+                  </a>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center">Phone number not provided</p>
+                )
+              ) : (
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 mb-2">Contact details are hidden</p>
+                  <Link to="/login" className="btn-secondary btn-sm block mx-auto w-fit">Sign in to view</Link>
+                </div>
+              )}
+            </div>
+
             <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-3 text-center">
               <div>
                 <p className="text-lg font-bold text-[var(--color-secondary)]">{listing.landlord?.trustScore || 0}</p>
@@ -357,6 +410,48 @@ const ListingDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {showReviewForm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm fade-in">
+          <div className="card-static w-full max-w-md p-6 slide-up" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold text-[var(--color-secondary)] mb-4">Rate your stay</h2>
+            <form onSubmit={handleReview}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewData(p => ({ ...p, rating: star }))}
+                      className="text-2xl border-none bg-transparent cursor-pointer hover:scale-110 transition-transform"
+                    >
+                      {star <= reviewData.rating ? '⭐' : '☆'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Review Comment</label>
+                <textarea
+                  value={reviewData.comment}
+                  onChange={(e) => setReviewData(p => ({ ...p, comment: e.target.value }))}
+                  required
+                  minLength={10}
+                  placeholder="Tell us what you liked (or didn't like) about this place... (min 10 chars)"
+                  className="input-field resize-none h-32"
+                  maxLength={500}
+                />
+              </div>
+              <div className="flex gap-3">
+                <button type="submit" className="btn-primary flex-1 py-2.5">Submit Review</button>
+                <button type="button" onClick={() => setShowReviewForm(false)} className="btn-secondary flex-1 py-2.5">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

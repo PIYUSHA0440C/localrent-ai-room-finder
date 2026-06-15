@@ -141,6 +141,7 @@ listingSchema.index(
 
 // Virtual for formatted rent
 listingSchema.virtual('formattedRent').get(function () {
+  if (this.rent == null) return null;
   return `₹${this.rent.toLocaleString('en-IN')}`;
 });
 

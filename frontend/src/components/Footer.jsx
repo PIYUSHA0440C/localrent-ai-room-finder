@@ -42,8 +42,8 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Contact</h4>
             <ul className="space-y-2.5">
-              <li className="text-sm text-gray-300">📧 support@localrent.in</li>
-              <li className="text-sm text-gray-300">📱 +91 98765 43210</li>
+              <li className="text-sm text-gray-300">📧 support@localrent.com</li>
+              <li className="text-sm text-gray-300">📱 +91 9876xxxxx0</li>
               <li className="text-sm text-gray-300">🕐 Mon-Sat, 9 AM - 7 PM</li>
             </ul>
           </div>

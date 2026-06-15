@@ -56,14 +56,14 @@ class BookingService {
       throw error;
     }
 
-    // Check for race condition - is there already an active booking?
-    const activeBooking = await Booking.findOne({
+    // Check if max occupants reached
+    const activeAndApprovedBookingsCount = await Booking.countDocuments({
       listing: listingId,
-      status: BOOKING_STATUSES.ACTIVE,
+      status: { $in: [BOOKING_STATUSES.ACTIVE, BOOKING_STATUSES.APPROVED] },
     });
 
-    if (activeBooking) {
-      const error = new Error('This listing already has an active tenant');
+    if (activeAndApprovedBookingsCount >= listing.maxOccupants) {
+      const error = new Error('This listing has reached its maximum occupants');
       error.statusCode = 400;
       throw error;
     }
@@ -265,15 +265,17 @@ class BookingService {
 
     this.validateTransition(booking.status, BOOKING_STATUSES.ACTIVE);
 
-    // Check for race condition - another active booking for same listing
-    const existingActive = await Booking.findOne({
+    // Check if max occupants reached
+    const activeCount = await Booking.countDocuments({
       listing: booking.listing._id,
       status: BOOKING_STATUSES.ACTIVE,
       _id: { $ne: bookingId },
     });
 
-    if (existingActive) {
-      const error = new Error('This listing already has an active tenant');
+    const listing = await Listing.findById(booking.listing._id);
+
+    if (activeCount >= listing.maxOccupants) {
+      const error = new Error('This listing has reached its maximum occupants');
       error.statusCode = 409;
       throw error;
     }
@@ -286,8 +288,10 @@ class BookingService {
     });
     await booking.save();
 
-    // Mark listing as unavailable
-    await Listing.findByIdAndUpdate(booking.listing._id, { isAvailable: false });
+    // Mark listing as unavailable ONLY if max occupants reached
+    if (activeCount + 1 >= listing.maxOccupants) {
+      await Listing.findByIdAndUpdate(booking.listing._id, { isAvailable: false });
+    }
 
     // Notify tenant
     await notificationService.createNotification({
@@ -331,29 +335,31 @@ class BookingService {
     await booking.save();
 
     // Mark listing as available again
-    await Listing.findByIdAndUpdate(booking.listing._id, { isAvailable: true });
+    if (booking.listing) {
+      await Listing.findByIdAndUpdate(booking.listing._id, { isAvailable: true });
+    }
 
     // Update completed bookings count for both users
-    await Promise.all([
-      User.findByIdAndUpdate(booking.tenant._id, { $inc: { completedBookings: 1 } }),
-      User.findByIdAndUpdate(booking.landlord, { $inc: { completedBookings: 1 } }),
-    ]);
+    const updatePromises = [User.findByIdAndUpdate(booking.landlord, { $inc: { completedBookings: 1 } })];
+    if (booking.tenant) updatePromises.push(User.findByIdAndUpdate(booking.tenant._id, { $inc: { completedBookings: 1 } }));
+    await Promise.all(updatePromises);
 
     // Update trust scores
-    await Promise.all([
-      trustService.updateTrustScore(booking.tenant._id),
-      trustService.updateTrustScore(booking.landlord),
-    ]);
+    const trustPromises = [trustService.updateTrustScore(booking.landlord)];
+    if (booking.tenant) trustPromises.push(trustService.updateTrustScore(booking.tenant._id));
+    await Promise.all(trustPromises);
 
     // Notify tenant - request review
-    await notificationService.createNotification({
-      user: booking.tenant._id,
-      type: 'review_request',
-      title: 'How was your stay? ⭐',
-      message: `Your stay at "${booking.listing.title}" is complete. Share your experience to help others!`,
-      relatedBooking: booking._id,
-      relatedListing: booking.listing._id,
-    });
+    if (booking.tenant) {
+      await notificationService.createNotification({
+        user: booking.tenant._id,
+        type: 'review_request',
+        title: 'How was your stay? ⭐',
+        message: `Your stay at "${booking.listing?.title || 'a property'}" is complete. Share your experience to help others!`,
+        relatedBooking: booking._id,
+        relatedListing: booking.listing?._id,
+      });
+    }
 
     return booking;
   }

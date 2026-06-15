@@ -5,7 +5,7 @@ import { getNotifications, markAsRead, markAllAsRead } from '../store/notificati
 import { Link } from 'react-router-dom';
 import { formatRent, formatDate, statusLabels, timeAgo } from '../utils/helpers';
 import toast from 'react-hot-toast';
-import { HiOutlineCalendar, HiOutlineBell, HiOutlineHome, HiOutlineStar } from 'react-icons/hi';
+import { HiOutlineCalendar, HiOutlineBell, HiOutlinePhone, HiOutlineStar } from 'react-icons/hi';
 
 const TenantDashboard = () => {
   const dispatch = useDispatch();
@@ -89,7 +89,7 @@ const TenantDashboard = () => {
                 <div key={booking._id} className="card-static p-5 rounded-2xl flex flex-col sm:flex-row gap-4">
                   {/* Listing Image */}
                   <Link to={`/listings/${booking.listing?._id}`} className="w-full sm:w-40 h-28 rounded-xl overflow-hidden flex-shrink-0 block">
-                    <img src={booking.listing?.images?.[0]?.url || 'https://placehold.co/200x140/E67E22/white?text=Room'} alt="" className="w-full h-full object-cover" />
+                    <img src={booking.listing?.images?.[0]?.url || 'https://placehold.co/200x140/E67E22/white?text=Room'} alt="" className="w-full h-full object-contain bg-gray-100" />
                   </Link>
                   {/* Info */}
                   <div className="flex-1 min-w-0">
@@ -111,8 +111,13 @@ const TenantDashboard = () => {
                       {['requested', 'approved'].includes(booking.status) && (
                         <button onClick={() => handleCancel(booking._id)} disabled={actionLoading} className="btn-danger btn-sm">Cancel</button>
                       )}
+                      {booking.landlord?.phone && ['requested', 'approved', 'active', 'completed'].includes(booking.status) && (
+                        <a href={`tel:${booking.landlord.phone}`} className="btn-secondary btn-sm no-underline flex items-center gap-1">
+                           <HiOutlinePhone className="w-3 h-3" /> Call Landlord
+                        </a>
+                      )}
                       {booking.status === 'completed' && (
-                        <Link to={`/listings/${booking.listing?._id}`} className="btn-secondary btn-sm no-underline flex items-center gap-1">
+                        <Link to={`/listings/${booking.listing?._id}`} state={{ showReviewModal: true, bookingId: booking._id }} className="btn-secondary btn-sm no-underline flex items-center gap-1">
                           <HiOutlineStar className="w-3 h-3" /> Leave Review
                         </Link>
                       )}

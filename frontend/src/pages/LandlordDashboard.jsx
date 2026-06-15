@@ -5,7 +5,7 @@ import { getLandlordBookings, approveBooking, rejectBooking, activateBooking, co
 import { Link } from 'react-router-dom';
 import { formatRent, formatDate, statusLabels, trustBadgeConfig, timeAgo } from '../utils/helpers';
 import toast from 'react-hot-toast';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineCheck, HiOutlineX, HiOutlinePlay, HiOutlineFlag } from 'react-icons/hi';
+import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineCheck, HiOutlineX, HiOutlinePlay, HiOutlineFlag, HiOutlinePhone } from 'react-icons/hi';
 
 const LandlordDashboard = () => {
   const dispatch = useDispatch();
@@ -99,7 +99,7 @@ const LandlordDashboard = () => {
             {myListings.map((listing) => (
               <div key={listing._id} className="card-static p-5 rounded-2xl flex flex-col sm:flex-row gap-4">
                 <Link to={`/listings/${listing._id}`} className="w-full sm:w-36 h-24 rounded-xl overflow-hidden flex-shrink-0 block">
-                  <img src={listing.images?.[0]?.url || 'https://placehold.co/200x120/E67E22/white?text=Room'} alt="" className="w-full h-full object-cover" />
+                  <img src={listing.images?.[0]?.url || 'https://placehold.co/200x120/E67E22/white?text=Room'} alt="" className="w-full h-full object-contain bg-gray-100" />
                 </Link>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between">
@@ -163,6 +163,9 @@ const LandlordDashboard = () => {
                       <div>
                         <p className="text-sm font-bold text-gray-800">{booking.tenant?.name}</p>
                         <p className="text-xs text-gray-500">{booking.tenant?.email}</p>
+                        {booking.tenant?.phone && (
+                          <p className="text-xs text-gray-500">{booking.tenant?.phone}</p>
+                        )}
                         {booking.tenant?.trustBadge && (
                           <span className={`badge badge-${booking.tenant.trustBadge} mt-0.5`}>
                             {trustBadgeConfig[booking.tenant.trustBadge]?.icon} {booking.tenant.trustBadge}
@@ -187,6 +190,11 @@ const LandlordDashboard = () => {
                       )}
                       {/* Action buttons */}
                       <div className="flex flex-wrap items-center gap-2 mt-3">
+                        {booking.tenant?.phone && ['requested', 'approved', 'active', 'completed'].includes(booking.status) && (
+                          <a href={`tel:${booking.tenant.phone}`} className="btn-secondary btn-sm no-underline flex items-center gap-1">
+                            <HiOutlinePhone className="w-3 h-3" /> Call Tenant
+                          </a>
+                        )}
                         {booking.status === 'requested' && (
                           <>
                             <button onClick={() => handleApprove(booking._id)} disabled={actionLoading} className="btn-primary btn-sm"><HiOutlineCheck className="w-3 h-3" /> Approve</button>

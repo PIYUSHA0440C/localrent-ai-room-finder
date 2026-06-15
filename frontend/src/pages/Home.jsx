@@ -75,15 +75,15 @@ const Home = () => {
       <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FEF3C7 50%, #DBEAFE 100%)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 backdrop-blur text-sm font-medium text-[var(--color-primary-dark)] mb-6 shadow-sm">
-              🎯 Trusted by 10,000+ students & professionals
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100/80 backdrop-blur text-sm font-bold text-purple-800 mb-6 shadow-sm border border-purple-200">
+              <HiSparkles className="w-4 h-4 text-purple-600" /> Supercharged by AI
             </div>
             <h1 className="text-4xl md:text-6xl font-extrabold text-[var(--color-secondary)] leading-tight mb-4">
-              Find Your Perfect
-              <span className="text-gradient block mt-1">Room, Zero Brokerage</span>
+              Your Local Room Finder,
+              <span className="text-gradient block mt-1">Now Much Smarter</span>
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed">
-              PGs, shared rooms & flats near your college or office. No brokers, no hassle — just verified listings from real landlords.
+              PGs, shared rooms & flats near your college or office. Zero brokerage, verified landlords, and AI tools that understand exactly what you need.
             </p>
 
             {/* Search Bar */}
@@ -153,22 +153,74 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ======== FEATURES ======== */}
-      <section className="py-16 bg-white">
+      {/* ======== AI FEATURES SECTION ======== */}
+      <section className="py-16 md:py-20 relative overflow-hidden bg-white">
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <h2 className="section-title">Why Choose LocalRent?</h2>
-            <p className="section-subtitle">Built for students and professionals moving to a new city</p>
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 mb-4">
+              <HiSparkles className="w-6 h-6" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[var(--color-secondary)] mb-4">Rental Superpowers</h2>
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto">We're a local room finder at heart, but we've added cutting-edge AI to eliminate the usual renting headaches.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f, i) => (
-              <div key={i} className="p-6 rounded-2xl border border-gray-100 hover:border-orange-200 hover:shadow-md transition-all duration-300 group">
-                <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-[var(--color-primary)] mb-4 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
-                  {f.icon}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* AI Search Card */}
+            <div className="relative group rounded-3xl p-8 bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-purple-200/50 blur-2xl group-hover:bg-purple-300/50 transition-colors"></div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-lg shadow-purple-200 mb-6">
+                  <HiOutlineSearch className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-bold text-[var(--color-secondary)] mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Natural Language Search</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">Stop clicking endless filters. Just tell our AI exactly what you're looking for in plain English.</p>
+                <div className="bg-white/80 backdrop-blur rounded-xl p-4 border border-purple-100/50">
+                  <p className="text-sm font-medium text-purple-800 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                    "A quiet PG near Koramangala under 10k with fast wifi"
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Review Summary Card */}
+            <div className="relative group rounded-3xl p-8 bg-gradient-to-br from-amber-50 to-orange-50 border border-orange-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+              <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-orange-200/50 blur-2xl group-hover:bg-orange-300/50 transition-colors"></div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center shadow-lg shadow-orange-200 mb-6">
+                  <HiOutlineStar className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">AI Review Summaries</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">Don't have time to read through 50 reviews? Our AI instantly summarizes what past tenants actually think.</p>
+                <div className="bg-white/80 backdrop-blur rounded-xl p-4 border border-orange-100/50">
+                  <p className="text-sm font-medium text-[var(--color-primary-dark)] flex items-start gap-2">
+                    <HiSparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>"Great location and food, but Wi-Fi can be slightly slow on weekends."</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======== CORE PLATFORM FEATURES ======== */}
+      <section className="py-16 md:py-20 bg-gray-50 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <h2 className="section-title">The LocalRent Promise</h2>
+            <p className="section-subtitle">Everything you need for a safe and hassle-free stay</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.slice(0, 5).map((feature, idx) => (
+              <div key={idx} className="card-static p-6 rounded-2xl hover:-translate-y-1 transition-transform">
+                <div className="w-12 h-12 rounded-full bg-orange-100 text-[var(--color-primary)] flex items-center justify-center mb-4">
+                  {feature.icon}
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">{feature.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -235,7 +287,7 @@ const Home = () => {
             Ready to find your room?
           </h2>
           <p className="text-gray-400 mb-8 text-lg">
-            Join thousands of students and professionals who found their perfect room without paying broker fees.
+            Join students and professionals who found their perfect room without paying broker fees.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/search" className="btn-primary px-8 py-3 text-base rounded-xl">
