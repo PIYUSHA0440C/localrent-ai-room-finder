@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import { BOOKING_STATUSES, BOOKING_TRANSITIONS } from '../config/constants.js';
 import notificationService from './notificationService.js';
 import trustService from './trustService.js';
+import { sendBookingEmail } from './emailService.js';
 
 class BookingService {
   // Validate state transition
@@ -94,6 +95,15 @@ class BookingService {
       relatedBooking: booking._id,
       relatedListing: listingId,
     });
+
+    if (listing.landlord.email) {
+      await sendBookingEmail(
+        listing.landlord.email,
+        listing.landlord.name,
+        'New Booking Request',
+        `${tenant.name} has requested to book your listing "${listing.title}". Please log in to your dashboard to review it.`
+      );
+    }
 
     return populatedBooking;
   }
@@ -200,6 +210,15 @@ class BookingService {
       relatedListing: booking.listing._id,
     });
 
+    if (booking.tenant.email) {
+      await sendBookingEmail(
+        booking.tenant.email,
+        booking.tenant.name,
+        'Booking Approved',
+        `Great news! Your booking for "${booking.listing.title}" has been approved by the landlord.`
+      );
+    }
+
     return booking;
   }
 
@@ -241,6 +260,15 @@ class BookingService {
       relatedBooking: booking._id,
       relatedListing: booking.listing._id,
     });
+
+    if (booking.tenant.email) {
+      await sendBookingEmail(
+        booking.tenant.email,
+        booking.tenant.name,
+        'Booking Update',
+        `Your booking request for "${booking.listing.title}" was not approved.${reason ? ` Reason: ${reason}` : ''}`
+      );
+    }
 
     return booking;
   }
@@ -359,6 +387,15 @@ class BookingService {
         relatedBooking: booking._id,
         relatedListing: booking.listing?._id,
       });
+
+      if (booking.tenant.email) {
+        await sendBookingEmail(
+          booking.tenant.email,
+          booking.tenant.name,
+          'How was your stay?',
+          `Your stay at "${booking.listing?.title || 'a property'}" is now marked as complete. Please log in to your dashboard and leave a review to help others!`
+        );
+      }
     }
 
     return booking;
