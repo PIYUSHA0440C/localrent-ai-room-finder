@@ -1,6 +1,8 @@
 # LocalRent AI Room Finder - Frontend UI/UX
 
-This directory contains the entire React-based user interface for LocalRent. It is designed to be highly responsive, modern, and user-centric, featuring role-based routing for Landlords and Tenants.
+This directory contains the React-based user interface for LocalRent, a platform built to solve the real-world problem of finding affordable, local rooms and PGs without the exhaustion of door-to-door searches.
+
+The frontend is designed to be highly responsive, modern, and user-centric, featuring tailored, role-based routing for Landlords (to effortlessly list their spaces) and Seekers/Tenants (to discover hidden gems).
 
 ## 🎨 Design System & Technologies
 

@@ -4,7 +4,7 @@
   <h1 align="center">LocalRent - AI Room Finder</h1>
 
   <p align="center">
-    An AI-Powered, Broker-Free Room & PG Discovery Platform
+    An AI-Powered Platform for Discovering Affordable Local Rooms & PGs
     <br />
     <a href="#about-the-project"><strong>Explore the docs »</strong></a>
     <br />
@@ -58,9 +58,9 @@
 
 ## About The Project
 
-**LocalRent** is a hyper-local property discovery platform designed to eliminate the middleman. It connects property owners directly with tenants, catering specifically to students and young professionals seeking affordable and trustworthy accommodations (Rooms, PGs, and Apartments).
+**LocalRent** is built to solve a real-world problem faced by students and young professionals stepping into new cities or starting their careers. Finding cheap, affordable, and accessible rooms near offices and educational institutes by searching door-to-door is an exhausting and tedious process. LocalRent bridges this gap by bringing hyper-local room listings right to your fingertips.
 
-By leveraging artificial intelligence, LocalRent transforms the traditional, tedious property search into a seamless, natural language experience.
+By listing their spaces directly on LocalRent, local landlords including homeowners with spare rooms they wouldn't traditionally advertise, can effortlessly offer their accommodations. Once listed on our platform, seekers can easily discover these hidden, affordable gems without the traditional hassle, powered by a seamless, natural language AI search.
 
 ### Core Features
 
