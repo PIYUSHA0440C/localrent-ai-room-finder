@@ -9,11 +9,12 @@
     <a href="#about-the-project"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="#">View Demo</a>
-    ·
-    <a href="#">Report Bug</a>
-    ·
-    <a href="#">Request Feature</a>
+    <a href="https://localrent-ai-room-finder.onrender.com/">
+      <img src="https://img.shields.io/badge/Live_Demo-2563EB?style=for-the-badge&logo=render&logoColor=white" alt="Live Demo" />
+    </a>
+    <br />
+    <br />
+    <a href="https://localrent-ai-room-finder.onrender.com/">View Demo</a>
   </p>
 </div>
 
