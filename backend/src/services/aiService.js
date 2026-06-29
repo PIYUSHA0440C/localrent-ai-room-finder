@@ -21,7 +21,7 @@ class AiService {
     }
 
     try {
-      const modelToUse = 'gemini-2.5-flash';
+      const modelToUse = config.ai.model;
       const response = await fetch(`${this.apiUrl}${modelToUse}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

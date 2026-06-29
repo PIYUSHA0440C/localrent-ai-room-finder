@@ -151,7 +151,7 @@ The backend handles the API, database operations, and third-party services.
    
    AI_API_KEY=your_google_gemini_api_key
    AI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/
-   AI_MODEL=gemini-2.5-flash
+   AI_MODEL=gemini-3.1-flash-lite
    ```
 4. Start the Node.js development server:
    ```bash

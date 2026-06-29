@@ -21,7 +21,25 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Security middleware
-app.use(helmet());
+// Re-enabling helmet with all the problem-causing policies explicitly disabled
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "img-src": [
+          "'self'",
+          "data:",
+          "blob:",
+          "https://ik.imagekit.io",
+          "https://placehold.co"
+        ],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(cors({
   origin: config.clientUrl,
   credentials: true,
