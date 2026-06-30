@@ -28,6 +28,7 @@ The backend handles database modeling, authentication security, external third-p
     ├── bookingService.js
     ├── emailService.js
     ├── imageService.js
+    ├── listingService.js
     ├── notificationService.js
     ├── reviewService.js
     └── trustService.js
@@ -91,9 +92,11 @@ AI_MODEL=gemini-3.1-flash-lite
 
 ## 📡 Core API Domains
 
+- **`/api/admin`**: Platform administration, user suspension, listing/review moderation, and trust recalculation.
+- **`/api/ai`**: AI-powered smart search, listing description generation, and review summarization.
 - **`/api/auth`**: Registration, login, logout, refresh-token, and OTP verification.
 - **`/api/users`**: Profile management and public profile viewing.
-- **`/api/listings`**: CRUD operations for property listings + AI Search endpoint.
+- **`/api/listings`**: CRUD operations for property listings.
 - **`/api/bookings`**: Booking request creation, landlord approval flows, and tenant lifecycle tracking.
-- **`/api/reviews`**: Verified review submission and AI summarization fetching.
+- **`/api/reviews`**: Verified review submission and fetching.
 - **`/api/notifications`**: In-app notification polling and read-receipts.

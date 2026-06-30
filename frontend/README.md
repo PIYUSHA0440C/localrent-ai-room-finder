@@ -6,9 +6,9 @@ The frontend is designed to be highly responsive, modern, and user-centric, feat
 
 ## 🎨 Design System & Technologies
 
-- **React 18** (Functional components & hooks)
+- **React** (Functional components & hooks)
 - **Vite** (Next-generation frontend tooling for blazing fast HMR)
-- **Tailwind CSS** (Utility-first styling with a custom theme in `tailwind.config.js`)
+- **Tailwind CSS** (Utility-first styling with a custom theme in `index.css`)
 - **Redux Toolkit** (Global state management for auth, listings, and bookings)
 - **React Router DOM** (Client-side routing and protected routes)
 - **React Hot Toast** (Elegant, accessible notifications)

@@ -76,7 +76,7 @@ By listing their spaces directly on LocalRent, local landlords including homeown
 The project utilizes a monolithic repository architecture.
 
 **Frontend UI**
-*   React 18
+*   React
 *   Vite
 *   Tailwind CSS
 *   Redux Toolkit
@@ -85,7 +85,7 @@ The project utilizes a monolithic repository architecture.
 *   Node.js
 *   Express.js
 *   MongoDB (Mongoose)
-*   Google Gemini 2.5 Flash (AI Integration)
+*   Google Gemini 3.1 Flash Lite (AI Integration)
 *   Resend (Transactional Emails)
 *   ImageKit (Media Storage)
 
